@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Asistent Vocal Inteligent</string>
+    <string name="start_listening">Start Listening</string>
+    <string name="press_the_button_and_start_speaking">Press the button and start speaking...</string>
 </resources>
