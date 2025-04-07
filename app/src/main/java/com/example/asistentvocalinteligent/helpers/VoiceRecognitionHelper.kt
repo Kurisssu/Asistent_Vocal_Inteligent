@@ -12,10 +12,13 @@ class VoiceRecognitionHelper(context: Context, private val onResult: (String) ->
     private val speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context)
     private val recognizerIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
         putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+        putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ro-RO")
         putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
     }
+    private var isContinuousListening = false
 
-    fun startListening() {
+    fun startListening(continuous: Boolean = false) {
+        isContinuousListening = continuous
         speechRecognizer.setRecognitionListener(object : RecognitionListener {
             override fun onReadyForSpeech(params: Bundle?) {
                 Log.d("SpeechRecognizer", "Gata de ascultare")
@@ -36,13 +39,17 @@ class VoiceRecognitionHelper(context: Context, private val onResult: (String) ->
 
             override fun onError(error: Int) {
                 Log.e("SpeechRecognizer", "Eroare: $error")
-                startListening()
+                if (isContinuousListening) {
+                    startListening(true)
+                }
             }
 
             override fun onResults(results: Bundle?) {
                 val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                 matches?.firstOrNull()?.let { onResult(it) }
-                startListening() // Ascultare continuă
+                if (isContinuousListening) {
+                    startListening(true)
+                }
             }
 
             override fun onPartialResults(partialResults: Bundle?) {
@@ -56,6 +63,7 @@ class VoiceRecognitionHelper(context: Context, private val onResult: (String) ->
     }
 
     fun stopListening() {
+        isContinuousListening = false
         speechRecognizer.stopListening()
         speechRecognizer.destroy()
     }

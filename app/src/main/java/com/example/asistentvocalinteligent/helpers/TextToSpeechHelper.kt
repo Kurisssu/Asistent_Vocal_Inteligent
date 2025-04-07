@@ -11,8 +11,25 @@ class TextToSpeechHelper(context: Context) {
         }
     }
 
-    fun speak(text: String) {
-        tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
+    fun speak(text: String, onComplete: (() -> Unit)? = null) {
+        tts?.stop()
+        tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "message_${System.currentTimeMillis()}")
+        
+        // Verificăm periodic dacă redarea s-a terminat
+        Thread {
+            while (tts?.isSpeaking == true) {
+                Thread.sleep(100)
+            }
+            onComplete?.invoke()
+        }.start()
+    }
+
+    fun stop() {
+        tts?.stop()
+    }
+
+    fun isSpeaking(): Boolean {
+        return tts?.isSpeaking ?: false
     }
 
     fun shutdown() {
